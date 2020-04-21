@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Chat</title>
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+
+        <link rel="stylesheet" href="styles.css">
+    </head>
+	<body>
+		<div class="container-fluid h-100">
+			<div class="row justify-content-center h-100">
+			
+				<div class="col-md-8 col-xl-6 chat">
+					<div class="card">
+					
+						<div class="card-body msg_card_body" id="messages">
+						
+						
+				
+						</div>
+						<div class="card-footer">
+                            <form id="form">
+                                <div class="input-group">
+                                    <div class="input-group-append">
+                                        <input type="text" class="form-control type_msg col-md-10" placeholder="Username" id="username">
+                                    </div>
+                                    <textarea id="message" class="form-control type_msg" placeholder="Type your message..."></textarea>
+                                    <div class="input-group-append">
+                                        <input type="submit" class="input-group-text send_btn" value="Send">
+                                    </div>
+                                </div>
+                            </form>
+						</div>
+					</div>
+				</div>
+			</div>
+        </div>
+        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+        <script>
+            const form = document.getElementById('form');
+            const messages_block = document.getElementById('messages');
+            const username = document.getElementById('username');
+            const message = document.getElementById('message');
+
+            // ****************** short polling ****************************
+            // form.addEventListener("submit", (e)=>{
+            //     e.preventDefault();
+            //     axios.post("http://127.0.0.1:3000/sendMessage",{user: username.value, message: message.value }).then( res =>{
+            //         message.value = '';
+            //     });
+            // });
+
+            // setInterval(()=>{
+            //     axios.get("http://127.0.0.1:3000/messages").then( res =>{
+            //         let messages = res.data;
+            //         messages_block.innerHTML = "";
+            //         for(let i=0;i<messages.length;i++){
+            //             messages_block.innerHTML += 	`<div class="d-flex justify-content-start mb-4"> \
+			// 					        <div class="msg_cotainer"> \
+			// 						        ${ messages[i].message }\
+			// 						       <span class="msg_time">${ messages[i].user }</span> \
+			// 					        </div>\
+			// 			         	</div>`;
+            //         }
+            //     });
+            // },5*1000);
+
+            // **************** long polling ********************
+            form.addEventListener("submit", (e)=>{
+                e.preventDefault();
+                axios.post("http://127.0.0.1:3000/long/sendMessage",{user: username.value, message: message.value }).then( res =>{
+                    message.value = '';
+                });
+            });
+
+            let getMessages = ()=>{
+                axios.get("http://127.0.0.1:3000/long/messages").then( res =>{
+                    let message = res.data;
+                        messages_block.innerHTML += 	`<div class="d-flex justify-content-start mb-4"> \
+								        <div class="msg_cotainer"> \
+									        ${ message.message }\
+									       <span class="msg_time">${ message.user }</span> \
+								        </div>\
+						         	</div>`;
+                    getMessages();
+               
+            });
+        }
+        getMessages();
+
+        </script>
+	</body>
+</html>
