@@ -5,7 +5,6 @@
 		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
         <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
-
         <link rel="stylesheet" href="styles.css">
     </head>
 	<body>
@@ -37,6 +36,7 @@
 				</div>
 			</div>
         </div>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
         <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
         <script>
             const form = document.getElementById('form');
@@ -44,7 +44,9 @@
             const username = document.getElementById('username');
             const message = document.getElementById('message');
 
-            // ****************** short polling ****************************
+    
+
+            // **************** event source  ********************
             // form.addEventListener("submit", (e)=>{
             //     e.preventDefault();
             //     axios.post("http://127.0.0.1:3000/sendMessage",{user: username.value, message: message.value }).then( res =>{
@@ -52,44 +54,35 @@
             //     });
             // });
 
-            // setInterval(()=>{
-            //     axios.get("http://127.0.0.1:3000/messages").then( res =>{
-            //         let messages = res.data;
-            //         messages_block.innerHTML = "";
-            //         for(let i=0;i<messages.length;i++){
+
+            // let event_source= new EventSource('http://127.0.0.1:3000/messages');
+            // event_source.onmessage = (e)=>{
+            //     let message = JSON.parse(e.data);
             //             messages_block.innerHTML += 	`<div class="d-flex justify-content-start mb-4"> \
 			// 					        <div class="msg_cotainer"> \
-			// 						        ${ messages[i].message }\
-			// 						       <span class="msg_time">${ messages[i].user }</span> \
+			// 						        ${ message.message }\
+			// 						       <span class="msg_time">${ message.user }</span> \
 			// 					        </div>\
 			// 			         	</div>`;
-            //         }
-            //     });
-            // },5*1000);
-
-            // **************** long polling ********************
+            // }
+//******************************** socket io *********************************
+            const socket = io.connect('http://127.0.0.1:3000');
+            
             form.addEventListener("submit", (e)=>{
                 e.preventDefault();
-                axios.post("http://127.0.0.1:3000/long/sendMessage",{user: username.value, message: message.value }).then( res =>{
-                    message.value = '';
-                });
+                socket.emit('sendMessage',{user: username.value, message: message.value });
+                message.value = '';
             });
-
-            let getMessages = ()=>{
-                axios.get("http://127.0.0.1:3000/long/messages").then( res =>{
-                    let message = res.data;
-                        messages_block.innerHTML += 	`<div class="d-flex justify-content-start mb-4"> \
+         
+            socket.on('newMessage', (message)=>{
+                messages_block.innerHTML += 	`<div class="d-flex justify-content-start mb-4"> \
 								        <div class="msg_cotainer"> \
 									        ${ message.message }\
 									       <span class="msg_time">${ message.user }</span> \
 								        </div>\
 						         	</div>`;
-                    getMessages();
-               
             });
-        }
-        getMessages();
-
+                
         </script>
 	</body>
 </html>

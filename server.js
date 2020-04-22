@@ -1,40 +1,38 @@
 const express= require('express');
+const http = require('http');
 const cors = require('cors');
 
 const app = express();
 
+
+const server = http.createServer(app);
+const io = require('socket.io')(server);
 app.use(cors());
 app.use(express.json());
 
-let messages = [];
 
-app.post('/sendMessage',(req, res)=>{
-    messages.push(req.body);
-    res.status(204).end();
-});
-
-app.get('/messages',(req, res)=>{
-    res.json(messages);
-});
-
-
-// ***********   long *******************
-let subscribers = [];
-
-app.post('/long/sendMessage',(req, res)=>{
-    Object.keys(subscribers).forEach(id =>{
-        subscribers[id].json(req.body);
-        delete subscribers[id];
+io.on('connection', (client)=>{
+    client.on('sendMessage',(data)=>{
+        io.emit('newMessage', data);
     });
-    res.status(204).end();
 });
 
-app.get('/long/messages',(req, res)=>{
-    let id= Math.ceil(Math.random*45623);
-    subscribers[id]= res;
-});
+// let subscribers = [];
 
+// app.get('/messages',(req, res)=>{
+//     subscribers.push(res);
+//     res.writeHead(200, {
+//         'Content-Type': 'text/event-stream'
+//     });
+// });
 
-app.listen(3000,()=>{
+// app.post('/sendMessage',(req, res)=>{
+//     subscribers.forEach((s)=>{
+//         s.write(`data: ${JSON.stringify(req.body)}\n\n`);
+//     });
+//     res.status(204).end();
+// });
+
+server.listen(3000,()=>{
     console.log("Server listening on port 3000 ");
 });
